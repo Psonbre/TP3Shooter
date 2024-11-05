@@ -120,59 +120,39 @@ void ATP3ShootCharacter::StopAiming()
 
 void ATP3ShootCharacter::Fire()
 {
-	FVector Start, LineTraceEnd, ForwardVector, CameraStart, CameraEnd;
-	FHitResult InitialHitResult, FinalHitResult;
+	FVector muzzleLocation = SK_Gun->GetSocketLocation("MuzzleFlash");
+	FVector cameraLocation = FollowCamera->GetComponentLocation();
+	FVector cameraForward = FollowCamera->GetForwardVector();
+	FVector traceEnd = cameraLocation + (cameraForward * 10000);
 
-	// Initial raycast to determine correct LineTraceEnd
-	CameraStart = FollowCamera->GetComponentLocation();
-	ForwardVector = FollowCamera->GetForwardVector();
-	CameraEnd = CameraStart + (ForwardVector * 10000);
+	FHitResult initialHit, finalHit;
+	FCollisionQueryParams queryParams;
+	queryParams.AddIgnoredActor(this);
 
-	// Perform an initial line trace from the camera to determine where the crosshair is aiming
-	FCollisionQueryParams InitialCollisionParams;
-	InitialCollisionParams.AddIgnoredActor(this); // Ignore self
+	bool hitFromCamera = GetWorld()->LineTraceSingleByChannel(initialHit, cameraLocation, traceEnd, ECC_Visibility, queryParams);
 
-	bool bInitialHit = GetWorld()->LineTraceSingleByChannel(InitialHitResult, CameraStart, CameraEnd, ECC_Visibility, InitialCollisionParams);
-
-	if (bInitialHit)
+	if (hitFromCamera)
 	{
-		// Set LineTraceEnd to the impact point of the initial raycast
-		LineTraceEnd = InitialHitResult.ImpactPoint;
-	}
-	else
-	{
-		// If no hit, set LineTraceEnd to a default far point
-		LineTraceEnd = CameraEnd;
+		traceEnd = initialHit.ImpactPoint;
 	}
 
-	// Get muzzle location
-	Start = SK_Gun->GetSocketLocation("MuzzleFlash");
+	FVector traceDirection = (traceEnd - muzzleLocation).GetSafeNormal();
+	traceEnd += traceDirection * 10.0f;
 
-	// Perform final line trace from the muzzle to the LineTraceEnd
-	FCollisionQueryParams FinalCollisionParams;
-	FinalCollisionParams.AddIgnoredActor(this); // Ignore self
+	bool hitFromMuzzle = GetWorld()->LineTraceSingleByChannel(finalHit, muzzleLocation, traceEnd, ECC_Visibility, queryParams);
 
-	bool bHit = GetWorld()->LineTraceSingleByChannel(FinalHitResult, Start, LineTraceEnd, ECC_Visibility, FinalCollisionParams);
+	DrawDebugLine(GetWorld(), muzzleLocation, hitFromMuzzle ? finalHit.ImpactPoint : traceEnd, FColor(255, 255, 255, 0.1f), false, 0.1f, 0, 1);
 
-	// Show debug line for visualization
-	DrawDebugLine(GetWorld(), Start, LineTraceEnd, FColor::Red, false, 1, 0, 1);
-
-	if (bHit)
+	if (hitFromMuzzle && finalHit.GetComponent()->IsSimulatingPhysics())
 	{
-		// If the hit component has physics enabled, apply force at the hit location
-		if (FinalHitResult.GetComponent()->IsSimulatingPhysics())
-		{
-			FVector ShotDirection = (LineTraceEnd - Start).GetSafeNormal();
-			float ForceStrength = 5000.0f; // Adjust as needed for force strength
-
-			// Apply the impulse at the hit location, not the center of mass
-			FinalHitResult.GetComponent()->AddImpulseAtLocation(ShotDirection * ForceStrength, FinalHitResult.ImpactPoint);
-		}
+		FVector shotDirection = (traceEnd - muzzleLocation).GetSafeNormal();
+		finalHit.GetComponent()->AddImpulseAtLocation(shotDirection * 5000.0f, finalHit.ImpactPoint);
 	}
 
-	// Fire particle effect from muzzle to impact point
-	FireParticle(Start, bHit ? FinalHitResult.ImpactPoint : LineTraceEnd);
+	FireParticle(muzzleLocation, hitFromMuzzle ? finalHit.ImpactPoint : traceEnd);
 }
+
+
 
 
 void ATP3ShootCharacter::BoostSpeed()
