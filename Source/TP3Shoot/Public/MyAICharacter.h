@@ -15,4 +15,7 @@ public :
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	class UBlackboardData* Blackboard;
+
+private:
+	virtual void BeginPlay() override;
 };
