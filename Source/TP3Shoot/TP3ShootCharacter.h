@@ -73,11 +73,12 @@ protected:
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
 	// Aiming function
+	UFUNCTION(BlueprintCallable)
 	void Aim();
 
 	void StopAiming();
 
-	// Firing function
+	UFUNCTION(BlueprintCallable)
 	void Fire();
 
 	void BoostSpeed();
