@@ -74,6 +74,7 @@ void ATP3ShootCharacter::Hurt(float damage)
 
 void ATP3ShootCharacter::BeginPlay()
 {
+	Super::BeginPlay();
 	StartLocation = GetActorLocation();
 }
 

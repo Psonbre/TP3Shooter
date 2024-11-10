@@ -28,7 +28,7 @@ public:
 	float TurnRateGamepad;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float health;
+	float health = 100.0;
 
 	FVector StartLocation;
 
