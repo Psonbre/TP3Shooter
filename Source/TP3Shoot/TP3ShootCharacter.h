@@ -27,6 +27,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float health;
+
+	FVector StartLocation;
+
+	UFUNCTION(BlueprintCallable)
+	void Hurt(float damage);
+
+	virtual void BeginPlay() override;
+
+
 protected:
 
 	// Add a gun skeletal mesh component

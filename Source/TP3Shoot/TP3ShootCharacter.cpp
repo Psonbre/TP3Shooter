@@ -61,6 +61,22 @@ ATP3ShootCharacter::ATP3ShootCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void ATP3ShootCharacter::Hurt(float damage)
+{
+	health -= damage;
+
+	if (health <= 0)
+	{
+		health = 100;
+		SetActorLocation(StartLocation);
+	}
+}
+
+void ATP3ShootCharacter::BeginPlay()
+{
+	StartLocation = GetActorLocation();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -143,17 +159,17 @@ void ATP3ShootCharacter::Fire()
 
 	DrawDebugLine(GetWorld(), muzzleLocation, hitFromMuzzle ? finalHit.ImpactPoint : traceEnd, FColor(255, 255, 255, 0.1f), false, 0.1f, 0, 1);
 
-	if (hitFromMuzzle && finalHit.GetComponent()->IsSimulatingPhysics())
+	if (hitFromMuzzle)
 	{
-		FVector shotDirection = (traceEnd - muzzleLocation).GetSafeNormal();
-		finalHit.GetComponent()->AddImpulseAtLocation(shotDirection * 5000.0f, finalHit.ImpactPoint);
+		ATP3ShootCharacter* character = Cast<ATP3ShootCharacter>(finalHit.GetActor());
+		if (character)
+		{
+			character->Hurt(10);
+		}
 	}
 
 	FireParticle(muzzleLocation, hitFromMuzzle ? finalHit.ImpactPoint : traceEnd);
 }
-
-
-
 
 void ATP3ShootCharacter::BoostSpeed()
 {
