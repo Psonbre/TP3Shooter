@@ -27,7 +27,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Input)
 	float TurnRateGamepad;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float regenRate = 5.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float health = 100.0;
 
 	FVector StartLocation;
@@ -36,7 +39,6 @@ public:
 	void Hurt(float damage);
 
 	virtual void BeginPlay() override;
-
 
 protected:
 

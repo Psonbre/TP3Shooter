@@ -68,7 +68,8 @@ void ATP3ShootCharacter::Hurt(float damage)
 	if (health <= 0)
 	{
 		health = 100;
-		SetActorLocation(StartLocation);
+		FVector randomLocation = FVector(FMath::RandRange(200, 2700), FMath::RandRange(200, 3300), 500);
+		SetActorLocation(randomLocation);
 	}
 }
 
